@@ -63,8 +63,7 @@ void ImuProcess::IntegrateGyr(const std::vector<sensor_msgs::msg::Imu::ConstPtr>
 
 void ImuProcess::UndistortPcl(const PointCloudXYZI::Ptr &pcl_in_out,
                               double dt_be, const Sophus::SE3d &Tbe) 
-{
-  const Eigen::Vector3d &tbe = Tbe.translation();
+{  const Eigen::Vector3d &tbe = Tbe.translation();
   Eigen::Vector3d rso3_be = Tbe.so3().log();
   for (auto &pt : pcl_in_out->points) 
   {
@@ -72,7 +71,10 @@ void ImuProcess::UndistortPcl(const PointCloudXYZI::Ptr &pcl_in_out,
     float dt_bi = pt.intensity - ring;
 
     if (dt_bi == 0) laserCloudtmp->push_back(pt);
-    double ratio_bi = dt_bi / dt_be;
+    double ratio_bi = 0;
+    if (dt_bi != 0 || dt_be != 0) {
+      ratio_bi = dt_bi / dt_be;
+    }
     /// Rotation from i-e
     double ratio_ie = 1 - ratio_bi;
 
@@ -145,7 +147,7 @@ std::vector<sensor_msgs::msg::PointCloud2> ImuProcess::Process(const MeasureGrou
   t1 = clock();
   UndistortPcl(cur_pcl_un_, dt_l_c_, T_l_be);
   t2 = clock();
-  //printf("time is: %f\n", 1000.0*(t2 - t1) / CLOCKS_PER_SEC);
+  printf("time is: %f\n", 1000.0*(t2 - t1) / CLOCKS_PER_SEC);
 
 
   {
