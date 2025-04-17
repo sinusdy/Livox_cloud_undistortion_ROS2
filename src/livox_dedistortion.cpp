@@ -38,12 +38,12 @@ double last_timestamp_imu = -1;
 std::deque<sensor_msgs::msg::Imu::ConstPtr> imu_buffer;
 
 
-float GetTimeStampROS2(auto msg)
+double GetTimeStampROS2(auto msg)
 {
-  float sec  = msg->header.stamp.sec;
-  float nano = msg->header.stamp.nanosec;
+  double sec  = msg->header.stamp.sec;
+  double nano = msg->header.stamp.nanosec;
   
-  return sec + nano/1000000000;
+  return sec + nano/1000000000.0;
 }
 
 void SigHandle(int sig) 
@@ -175,7 +175,7 @@ void ProcessLoop(std::shared_ptr<ImuProcess> p_imu)
 void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg)
 { 
   // Get timestamp
-  float timestamp = GetTimeStampROS2(msg); 
+  double timestamp = GetTimeStampROS2(msg); 
     
   //std::cout<<"get IMU at time: "<< timestamp<< std::endl;
   // Lock the variable
@@ -188,6 +188,9 @@ void imu_callback(const sensor_msgs::msg::Imu::SharedPtr msg)
       b_reset = true;
   }
   last_timestamp_imu = timestamp;
+  // RCLCPP_INFO_STREAM(node->get_logger(), "IMU msg timestamp sec : " << msg->header.stamp.sec);
+  // RCLCPP_INFO_STREAM(node->get_logger(), "IMU msg timestamp nsec: " << msg->header.stamp.nanosec);
+  // RCLCPP_INFO_STREAM(node->get_logger(), "Current IMU timestamp: " << std::fixed << std::setprecision(5) << timestamp);
   // Add current IMU to the buffer
   imu_buffer.push_back(msg);
   // Unlock variable

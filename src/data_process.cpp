@@ -16,12 +16,12 @@ using Sophus::SO3d;
 pcl::PointCloud<pcl::PointXYZI>::Ptr laserCloudtmp(new pcl::PointCloud<pcl::PointXYZI>());
 
 
-float ImuProcess::GetTimeStampROS2(auto msg)
+double ImuProcess::GetTimeStampROS2(auto msg)
 {
-  float sec  = msg->header.stamp.sec;
-  float nano = msg->header.stamp.nanosec;
+  double sec  = msg->header.stamp.sec;
+  double nano = msg->header.stamp.nanosec;
   
-  return sec + nano/1000000000;
+  return sec + nano/1000000000.0;
 }
 
 ImuProcess::ImuProcess() : b_first_frame_(true), last_lidar_(nullptr), last_imu_(nullptr) 
@@ -55,7 +55,7 @@ void ImuProcess::IntegrateGyr(const std::vector<sensor_msgs::msg::Imu::ConstPtr>
   for (const auto &imu : v_imu) {
     gyr_int_.Integrate(imu);
   }
-  RCLCPP_INFO(node_->get_logger(),"integrate rotation angle [x, y, z]: [%.2f, %.2f, %.2f]",
+  RCLCPP_INFO(node_->get_logger(),"integrate rotation angle [x, y, z]: [%.3f, %.3f, %.3f]",
            gyr_int_.GetRot().angleX() * 180.0 / M_PI,
            gyr_int_.GetRot().angleY() * 180.0 / M_PI,
            gyr_int_.GetRot().angleZ() * 180.0 / M_PI);
@@ -63,7 +63,8 @@ void ImuProcess::IntegrateGyr(const std::vector<sensor_msgs::msg::Imu::ConstPtr>
 
 void ImuProcess::UndistortPcl(const PointCloudXYZI::Ptr &pcl_in_out,
                               double dt_be, const Sophus::SE3d &Tbe) 
-{  const Eigen::Vector3d &tbe = Tbe.translation();
+{ 
+  const Eigen::Vector3d &tbe = Tbe.translation();
   Eigen::Vector3d rso3_be = Tbe.so3().log();
   for (auto &pt : pcl_in_out->points) 
   {

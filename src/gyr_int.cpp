@@ -5,12 +5,12 @@
 using Sophus::SO3d;
 
 
-float GyrInt::GetTimeStampROS2(auto msg)
+double GyrInt::GetTimeStampROS2(auto msg)
 {
-  float sec  = msg->header.stamp.sec;
-  float nano = msg->header.stamp.nanosec;
+  double sec  = msg->header.stamp.sec;
+  double nano = msg->header.stamp.nanosec;
   
-  return sec + nano/1000000000;
+  return sec + nano/1000000000.0;
 }
 
 GyrInt::GyrInt() : start_timestamp_(-1), last_imu_(nullptr) {}
@@ -45,6 +45,7 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
     sensor_msgs::msg::Imu::Ptr imu_inter(new sensor_msgs::msg::Imu());
     double dt1 = start_timestamp_ - GetTimeStampROS2(last_imu_);
     double dt2 = GetTimeStampROS2(imu) - start_timestamp_;
+    std::cout << "Dt1 : " << dt1 << ", Dt2: " << dt2 << std::endl;
     //ROS_ASSERT_MSG(dt1 >= 0 && dt2 >= 0, "%f - %f - %f",
     //               GetTimeStampROS2(last_imu_), start_timestamp_,
     //               GetTimeStampROS2(imu));

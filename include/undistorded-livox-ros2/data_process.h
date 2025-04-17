@@ -32,7 +32,7 @@ class ImuProcess {
   std::vector<sensor_msgs::msg::PointCloud2> Process(const MeasureGroup &meas);
   void Reset();
   
-  float GetTimeStampROS2(auto msg);
+  double GetTimeStampROS2(auto msg);
   
   void IntegrateGyr(const std::vector<sensor_msgs::msg::Imu::ConstPtr> &v_imu);
 
