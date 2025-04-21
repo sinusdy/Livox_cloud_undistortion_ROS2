@@ -45,7 +45,6 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
     sensor_msgs::msg::Imu::Ptr imu_inter(new sensor_msgs::msg::Imu());
     double dt1 = start_timestamp_ - GetTimeStampROS2(last_imu_);
     double dt2 = GetTimeStampROS2(imu) - start_timestamp_;
-    std::cout << "Dt1 : " << dt1 << ", Dt2: " << dt2 << std::endl;
     //ROS_ASSERT_MSG(dt1 >= 0 && dt2 >= 0, "%f - %f - %f",
     //               GetTimeStampROS2(last_imu_), start_timestamp_,
     //               GetTimeStampROS2(imu));
@@ -58,6 +57,8 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
     const auto &acc2 = imu->linear_acceleration;
 
     imu_inter->header.stamp.set__sec(start_timestamp_);
+    uint32_t nanosec = (start_timestamp_ - static_cast<uint32_t>(start_timestamp_)) * 1e9;
+    imu_inter->header.stamp.set__nanosec(nanosec);
     //imu_inter->header.stamp.fromSec(start_timestamp_);
     imu_inter->angular_velocity.x = w1 * gyr1.x + w2 * gyr2.x;
     imu_inter->angular_velocity.y = w1 * gyr1.y + w2 * gyr2.y;
