@@ -156,7 +156,7 @@ std::vector<sensor_msgs::msg::PointCloud2> ImuProcess::Process(const MeasureGrou
     sensor_msgs::msg::PointCloud2 pcl_out_msg; 
     pcl::toROSMsg(*laserCloudtmp, pcl_out_msg);
     pcl_out_msg.header = pcl_in_msg->header;
-    pcl_out_msg.header.frame_id = "/livox_frame";
+    pcl_out_msg.header.frame_id = "livox_frame";
     PclToPublish.push_back(pcl_out_msg);
     laserCloudtmp->clear();
   }
@@ -166,7 +166,7 @@ std::vector<sensor_msgs::msg::PointCloud2> ImuProcess::Process(const MeasureGrou
     sensor_msgs::msg::PointCloud2 pcl_out_msg;
     pcl::toROSMsg(*cur_pcl_un_, pcl_out_msg);
     pcl_out_msg.header = pcl_in_msg->header;
-    pcl_out_msg.header.frame_id = "/livox_frame";
+    pcl_out_msg.header.frame_id = "livox_frame";
     PclToPublish.push_back(pcl_out_msg);
   }
   { 
@@ -175,7 +175,7 @@ std::vector<sensor_msgs::msg::PointCloud2> ImuProcess::Process(const MeasureGrou
     //std::cout << "point size: " << cur_pcl_in_->points.size() << "\n";
     pcl::toROSMsg(*cur_pcl_in_, pcl_out_msg);
     pcl_out_msg.header = pcl_in_msg->header;
-    pcl_out_msg.header.frame_id = "/livox_frame";
+    pcl_out_msg.header.frame_id = "livox_frame";
     PclToPublish.push_back(pcl_out_msg);
   }
 
