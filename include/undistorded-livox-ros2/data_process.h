@@ -1,15 +1,15 @@
 #ifndef DATA_PROCESS_H
 #define DATA_PROCESS_H
 
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
 #include "gyr_int.h"
 #include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "sensor_msgs/msg/imu.hpp"
-#include <fstream>
+#include "sensor_msgs/msg/point_cloud2.hpp"
 #include "sophus/se3.hpp"
 #include <cmath>
+#include <fstream>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <time.h>
 
 typedef pcl::PointXYZI PointType;
@@ -23,28 +23,28 @@ struct MeasureGroup {
 };
 
 class ImuProcess {
- public:
+public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   ImuProcess();
   ~ImuProcess();
-  
+
   std::vector<sensor_msgs::msg::PointCloud2> Process(const MeasureGroup &meas);
   void Reset();
-  
+
   double GetTimeStampROS2(auto msg);
-  
+
   void IntegrateGyr(const std::vector<sensor_msgs::msg::Imu::ConstPtr> &v_imu);
 
   void UndistortPcl(const PointCloudXYZI::Ptr &pcl_in_out, double dt_be,
                     const Sophus::SE3d &Tbe);
-  void set_T_i_l(Eigen::Quaterniond& q, Eigen::Vector3d& t){
+  void set_T_i_l(Eigen::Quaterniond &q, Eigen::Vector3d &t) {
     T_i_l = Sophus::SE3d(q, t);
   }
-  
-  //ros::NodeHandle nh;
 
- private:
+  // ros::NodeHandle nh;
+
+private:
   /// Whether is the first frame, init for first frame
   bool b_first_frame_ = true;
 
@@ -61,11 +61,11 @@ class ImuProcess {
   sensor_msgs::msg::PointCloud2::ConstPtr last_lidar_;
   sensor_msgs::msg::Imu::ConstPtr last_imu_;
   // ROS2 node for info and publication
-  std::shared_ptr<rclcpp::Node> node_ = rclcpp::Node::make_shared("data_process");
-  
+  std::shared_ptr<rclcpp::Node> node_ =
+      rclcpp::Node::make_shared("data_process");
 
   /// For gyroscope integration
   GyrInt gyr_int_;
 };
 
-#endif  // LOAM_HORIZON_DATA_PROCESS_H
+#endif // LOAM_HORIZON_DATA_PROCESS_H

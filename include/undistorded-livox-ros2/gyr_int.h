@@ -1,20 +1,20 @@
 #ifndef GYR_INT_H
 #define GYR_INT_H
 
-#include <sensor_msgs/msg/imu.hpp>
 #include "sophus/so3.hpp"
+#include <sensor_msgs/msg/imu.hpp>
 
-class GyrInt 
-{
-  public:
+class GyrInt {
+public:
   GyrInt();
   double GetTimeStampROS2(auto msg);
   void Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu);
-  void Reset(double start_timestamp, const sensor_msgs::msg::Imu::ConstPtr &lastimu);
+  void Reset(double start_timestamp,
+             const sensor_msgs::msg::Imu::ConstPtr &lastimu);
 
   const Sophus::SO3d GetRot() const;
 
-  private:
+private:
   // Sophus::SO3d r_;
   /// last_imu_ is
   double start_timestamp_;
@@ -24,4 +24,4 @@ class GyrInt
   std::vector<Sophus::SO3d> v_rot_;
 };
 
-#endif 
+#endif

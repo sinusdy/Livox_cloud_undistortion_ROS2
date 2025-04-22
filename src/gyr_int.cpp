@@ -4,13 +4,11 @@
 
 using Sophus::SO3d;
 
-
-double GyrInt::GetTimeStampROS2(auto msg)
-{
-  double sec  = msg->header.stamp.sec;
+double GyrInt::GetTimeStampROS2(auto msg) {
+  double sec = msg->header.stamp.sec;
   double nano = msg->header.stamp.nanosec;
-  
-  return sec + nano/1000000000.0;
+
+  return sec + nano / 1000000000.0;
 }
 
 GyrInt::GyrInt() : start_timestamp_(-1), last_imu_(nullptr) {}
@@ -35,8 +33,8 @@ const Sophus::SO3d GyrInt::GetRot() const {
 void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
   /// Init
   if (v_rot_.empty()) {
-  //  printf(start_timestamp_ > 0);
-  //  printf(last_imu_ != nullptr);
+    //  printf(start_timestamp_ > 0);
+    //  printf(last_imu_ != nullptr);
 
     /// Identity rotation
     v_rot_.push_back(SO3d());
@@ -45,7 +43,7 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
     sensor_msgs::msg::Imu::Ptr imu_inter(new sensor_msgs::msg::Imu());
     double dt1 = start_timestamp_ - GetTimeStampROS2(last_imu_);
     double dt2 = GetTimeStampROS2(imu) - start_timestamp_;
-    //ROS_ASSERT_MSG(dt1 >= 0 && dt2 >= 0, "%f - %f - %f",
+    // ROS_ASSERT_MSG(dt1 >= 0 && dt2 >= 0, "%f - %f - %f",
     //               GetTimeStampROS2(last_imu_), start_timestamp_,
     //               GetTimeStampROS2(imu));
     double w1 = dt2 / (dt1 + dt2 + 1e-9);
@@ -57,9 +55,10 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
     const auto &acc2 = imu->linear_acceleration;
 
     imu_inter->header.stamp.set__sec(start_timestamp_);
-    uint32_t nanosec = (start_timestamp_ - static_cast<uint32_t>(start_timestamp_)) * 1e9;
+    uint32_t nanosec =
+        (start_timestamp_ - static_cast<uint32_t>(start_timestamp_)) * 1e9;
     imu_inter->header.stamp.set__nanosec(nanosec);
-    //imu_inter->header.stamp.fromSec(start_timestamp_);
+    // imu_inter->header.stamp.fromSec(start_timestamp_);
     imu_inter->angular_velocity.x = w1 * gyr1.x + w2 * gyr2.x;
     imu_inter->angular_velocity.y = w1 * gyr1.y + w2 * gyr2.y;
     imu_inter->angular_velocity.z = w1 * gyr1.z + w2 * gyr2.z;
@@ -90,4 +89,3 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
   v_imu_.push_back(imu);
   v_rot_.push_back(rot);
 }
-
