@@ -33,6 +33,11 @@ double last_timestamp_lidar = -1;
 std::deque<sensor_msgs::msg::PointCloud2::ConstPtr> lidar_buffer;
 double last_timestamp_imu = -1;
 std::deque<sensor_msgs::msg::Imu::ConstPtr> imu_buffer;
+std::vector<sensor_msgs::msg::PointCloud2> pcl_buffer;
+std::vector<Sophus::SO3d> rot_buffer;
+std::vector<Eigen::Vector3d> lin_buffer;
+int combine_count = 2;
+int combine_i = 0;
 
 double GetTimeStampROS2(auto msg) {
   double sec = msg->header.stamp.sec;
@@ -142,6 +147,16 @@ void ProcessLoop(std::shared_ptr<ImuProcess> p_imu) {
       pub_OriginPcl->publish(to_publish[2]);
 
       RCLCPP_INFO(node->get_logger(), "Publishing undistorded pointcloud");
+    }
+
+    if (!to_publish.empty() && combine_i < 2) {
+      pcl_buffer.push_back(to_publish[1]);
+      rot_buffer.push_back(p_imu->GetLatestRot());
+      lin_buffer.push_back(p_imu->GetLatestLin());
+    } else {
+      //TODO: Combine point cloud
+      //* Interpolate relative position to first point cloud
+      //* Transform and combine point clouds
     }
 
     r.sleep();

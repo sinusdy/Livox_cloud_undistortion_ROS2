@@ -42,6 +42,9 @@ public:
     T_i_l = Sophus::SE3d(q, t);
   }
 
+  Sophus::SO3d GetLatestRot();
+
+  Eigen::Vector3d GetLatestLin();
   // ros::NodeHandle nh;
 
 private:

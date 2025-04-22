@@ -46,6 +46,7 @@ void ImuProcess::Reset() {
 
 void ImuProcess::IntegrateGyr(
     const std::vector<sensor_msgs::msg::Imu::ConstPtr> &v_imu) {
+  std::cout << "In IntegrateGyr function \n";
   /// Reset gyr integrator
   gyr_int_.Reset(GetTimeStampROS2(last_lidar_), last_imu_);
   /// And then integrate all the imu measurements
@@ -57,6 +58,19 @@ void ImuProcess::IntegrateGyr(
               gyr_int_.GetRot().angleX() * 180.0 / M_PI,
               gyr_int_.GetRot().angleY() * 180.0 / M_PI,
               gyr_int_.GetRot().angleZ() * 180.0 / M_PI);
+  RCLCPP_INFO(node_->get_logger(),
+              "integrate linear pose [x, y, z]: [%.4f, %.4f, %.4f]",
+              gyr_int_.GetLin().x(),
+              gyr_int_.GetLin().y(),
+              gyr_int_.GetLin().z());
+}
+
+Sophus::SO3d ImuProcess::GetLatestRot() {
+  return gyr_int_.GetRot();
+} 
+
+Eigen::Vector3d ImuProcess::GetLatestLin() {
+  return gyr_int_.GetLin();
 }
 
 void ImuProcess::UndistortPcl(const PointCloudXYZI::Ptr &pcl_in_out,
@@ -129,10 +143,12 @@ ImuProcess::Process(const MeasureGroup &meas) {
 
   /// Integrate all input imu message
   IntegrateGyr(meas.imu);
+  RCLCPP_INFO(node_->get_logger(), "Calling integrate gyr msg");
 
   /// Compensate lidar points with IMU rotation
   /// Initial pose from IMU (with only rotation)
   SE3d T_l_c(gyr_int_.GetRot(), Eigen::Vector3d::Zero());
+  Eigen::Vector3d lin_pose(gyr_int_.GetLin());
   dt_l_c_ = GetTimeStampROS2(pcl_in_msg) - GetTimeStampROS2(last_lidar_);
   //// Get input pcl
   pcl::fromROSMsg(*pcl_in_msg, *cur_pcl_in_);

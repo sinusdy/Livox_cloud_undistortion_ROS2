@@ -20,6 +20,8 @@ void GyrInt::Reset(double start_timestamp,
 
   v_rot_.clear();
   v_imu_.clear();
+  v_lin_.clear();
+  lin_pose_.clear();
 }
 
 const Sophus::SO3d GyrInt::GetRot() const {
@@ -27,6 +29,14 @@ const Sophus::SO3d GyrInt::GetRot() const {
     return SO3d();
   } else {
     return v_rot_.back();
+  }
+}
+
+const Eigen::Vector3d GyrInt::GetLin() const {
+  if (lin_pose_.empty()) {
+    return Eigen::Vector3d();
+  } else {
+    return lin_pose_.back();
   }
 }
 
@@ -38,7 +48,8 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
 
     /// Identity rotation
     v_rot_.push_back(SO3d());
-
+    v_lin_.push_back(Eigen::Vector3d());
+    lin_pose_.push_back(Eigen::Vector3d());
     /// Interpolate imu in
     sensor_msgs::msg::Imu::Ptr imu_inter(new sensor_msgs::msg::Imu());
     double dt1 = start_timestamp_ - GetTimeStampROS2(last_imu_);
@@ -86,6 +97,18 @@ void GyrInt::Integrate(const sensor_msgs::msg::Imu::ConstPtr &imu) {
 
   SO3d rot = rot_last * delta_r;
 
+  //* Linear interpolation
+  Eigen::Vector3d acc_last(imumsg_last->linear_acceleration.x,
+                           imumsg_last->linear_acceleration.y,
+                           imumsg_last->linear_acceleration.z - 1.0);
+  Eigen::Vector3d acc(imu->linear_acceleration.x, imu->linear_acceleration.y,
+                      imu->linear_acceleration.z - 1.0);
+  auto delta_vel = dt * 0.5 * (acc + acc_last) * 9.81;
+  auto lin = v_lin_.back() + delta_vel;
+  auto delta_pos = rot * (v_lin_.back() * dt + 0.5 * acc * dt * dt);
+  auto pos = lin_pose_.back() + delta_pos;
   v_imu_.push_back(imu);
   v_rot_.push_back(rot);
+  v_lin_.push_back(lin);
+  lin_pose_.push_back(pos);
 }
